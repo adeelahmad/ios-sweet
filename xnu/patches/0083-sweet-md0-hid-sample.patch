@@ -1,0 +1,27 @@
+diff --git a/iokit/bsddev/IOKitBSDInit.cpp b/iokit/bsddev/IOKitBSDInit.cpp
+--- a/iokit/bsddev/IOKitBSDInit.cpp
++++ b/iokit/bsddev/IOKitBSDInit.cpp
+@@ -812,6 +812,23 @@
+ 				IOLog("BSD root: %s, major %d, minor %d\n", rootName, major(*root), minor(*root));
+ 				*oflags = 0;                                                                    /* Show that this is not network */
+ 
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++				/*
++				 * A33: an rd=md0 root never runs sweet_ufs_rootdev(), so the stack
++				 * sampler and the SWEET HID input drivers were never started on this
++				 * path.  Start them here -- the same order and the same point in boot
++				 * as sweet_ufs.c uses (minus sweet_log_start(), which needs the UFS
++				 * partition) -- so md0 boots print SMP stacks and feed the HID
++				 * services that backboardd matches on.
++				 */
++				extern void sweet_sample_start(void);
++				extern void sweet_keys_init(void);
++				extern void sweet_touch_init(void);
++				sweet_sample_start();
++				sweet_keys_init();
++				sweet_touch_init();
++#endif
++
+ #if CONFIG_KDP_INTERACTIVE_DEBUGGING
+ 				/* retrieve final ramdisk range and initialize KDP variables */
+ 				if (mdevgetrange(xchar, &kdp_core_ramdisk_addr, &kdp_core_ramdisk_size) != 0) {
