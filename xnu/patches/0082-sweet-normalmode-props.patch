@@ -1,0 +1,24 @@
+diff --git a/iokit/Kernel/arm/SweetFramebuffer.cpp b/iokit/Kernel/arm/SweetFramebuffer.cpp
+index a62416c..f5597a1 100644
+--- a/iokit/Kernel/arm/SweetFramebuffer.cpp
++++ b/iokit/Kernel/arm/SweetFramebuffer.cpp
+@@ -50,6 +50,7 @@ extern "C" int sweet_console_muted;     /* osfmk/console/serial_console.c */
+ #include <pexpert/pexpert.h>
+ #include <kern/clock.h>
+ #include <sys/proc.h>
++#include <libkern/c++/OSBoolean.h>
+ 
+ enum {
+ 	kSweetFBGetLayerDefaultSurface  = 3,
+@@ -200,6 +201,11 @@ AppleCLCD::start(IOService *provider)
+ 	setProperty(kIOUserClientClassKey, "IOMobileFramebufferUserClient");
+ 	setProperty("external", false);
+ 	setProperty("DisplayPipePlaneBaseAlignment", 64ULL, 32);
++	/* IOMFB.framework's --launchd_boot FDR loader reads these two booleans
++	 * from the opened AppleCLCD service; the DT nub's properties are not
++	 * visible to that own-table read (A29). */
++	setProperty("NormalModeEnable", kOSBooleanFalse);
++	setProperty("ADCLLoadAll", kOSBooleanTrue);
+ 	registerService();
+ 	IOLog("SWEET FB: AppleCLCD %ux%u stride %u at 0x%llx, default surface %u, presented as %ux%u\n",
+ 	    fWidth, fHeight, fRowBytes, fPhys, fSurface->id, fLogicalW, fLogicalH);
